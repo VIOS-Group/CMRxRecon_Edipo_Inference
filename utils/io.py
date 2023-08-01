@@ -11,5 +11,4 @@ def save_reconstructions(recons, save_dir):
         path = (out_dir / file_parts[-1]).resolve()
         save_dict = {'img4ranking': recon.transpose(1,2,0,3)}
         scio.savemat(file_name=str(path),
-                            mdict=save_dict,
-                            store_python_metadata=True)
+                            mdict=save_dict)
