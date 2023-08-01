@@ -7,7 +7,7 @@ import lightning.pytorch as pl
 from data.transforms import CineNetDataTransform
 from pl_modules import MriDataModule, CineNetModule, CRNN_CineNetModule
 
-torch.set_float32_matmul_precision('medium' | 'high')
+torch.set_float32_matmul_precision('medium')
 
 def build_args():
     parser = ArgumentParser()
