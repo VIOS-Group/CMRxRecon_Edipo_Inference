@@ -29,7 +29,7 @@ class MriModule(LightningModule):
     def __init__(
         self,
         num_log_images: int=16,
-        recon_dir = "reconstruction"
+        recon_dir = "output"
     ):
         super().__init__()
         
