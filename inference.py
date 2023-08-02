@@ -11,8 +11,8 @@ torch.set_float32_matmul_precision('medium')
 
 def build_args():
     parser = ArgumentParser()
-    test_path = "input"
-    exp_name = "crnn_NWS_5c_48chan_ddp_crop_perp"
+    test_path = "/input"
+    exp_name = "Exp1"
     data_path = Path(test_path)
     default_log_path = Path("logs") / exp_name
 
