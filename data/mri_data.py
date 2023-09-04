@@ -46,7 +46,7 @@ class SliceDataset(torch.utils.data.Dataset):
                 information for faster load times.
         """
 
-        self.root = root
+        self.root = root / ('SingleCoil/Cine/TestSet')
         self.transform = transform
         self.dataset_cache_file = Path(dataset_cache_file)
         
@@ -65,18 +65,19 @@ class SliceDataset(torch.utils.data.Dataset):
             dataset_cache = {}
         
         #* Iterate through the dataset and create a list of samples
-        if dataset_cache.get(root) is None:
+        if dataset_cache.get(self.root) is None:
             folders = []
             #* iterate each accelerate factor to get all folders
             acc_folders = ['AccFactor04', 'AccFactor08', 'AccFactor10']
             
             for acc_folder in acc_folders:
-                acc_file = natsorted(list(Path(os.path.join(root, acc_folder)).iterdir()))
+                acc_file = natsorted(list(Path(os.path.join(self.root,acc_folder)).iterdir()))
                 folders.append(acc_file)
             
             for folder in folders:
                 # this block below has been indented under an 
                 # external FOR loop that goes across the three folders 
+
                 # of the "folders" object
                 for patient in folder:
                     # get all mat file other than mask
@@ -94,14 +95,14 @@ class SliceDataset(torch.utils.data.Dataset):
             #* Save the dataset cache
             if use_dataset_cache:
                 print('Saving dataset cache file')
-                dataset_cache[root] = self.examples
+                dataset_cache[self.root] = self.examples
                 logging.info(f"Saving dataset cache to {self.dataset_cache_file}")
                 with open(self.dataset_cache_file, "wb") as f:
                     pickle.dump(dataset_cache, f)
         else:
             print('Using dataset cache file')
             logging.info(f"Using dataset cache from {self.dataset_cache_file}")
-            self.examples = dataset_cache[root]
+            self.examples = dataset_cache[self.root]
             
         #! Sumsampling
         if sample_rate is None:
@@ -146,7 +147,6 @@ class SliceDataset(torch.utils.data.Dataset):
         #* get data sample from self.examples and feed into transform
         fname, slice_index, metadata = self.examples[i]
         mask_name = self.root / fname.split('/')[-3] / fname.split('/')[-2] / (fname.split('/')[-1].split('.')[0] + '_mask.mat')
-        
         data = mat73.loadmat(fname)
         if len(data[list(data.keys())[0]].shape) == 5:
             kspace = data[list(data.keys())[0]][:, :, 0, slice_index, :]

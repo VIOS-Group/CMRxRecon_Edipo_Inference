@@ -5,20 +5,22 @@ from argparse import ArgumentParser
 import torch
 import lightning.pytorch as pl
 from data.transforms import CineNetDataTransform
-from pl_modules import MriDataModule, CineNetModule, CRNN_CineNetModule
+from pl_modules import MriDataModule, CineNetModule, CRNN_CineNetModule, CRNN_SR_CineNetModule
 
 torch.set_float32_matmul_precision('medium')
 
 def build_args():
     parser = ArgumentParser()
-    test_path = "/input"
-    exp_name = "Exp1"
-    data_path = Path(test_path)
+    # test_path = "./input/"
+    exp_name = "crnn_NWS_6c_64chan_L1_ssim_HI_SR"
+    # data_path = Path(test_path)
     default_log_path = Path("logs") / exp_name
 
+    parser.add_argument('--input', type=str, nargs='?', default='./input/', help='input directory')
+    parser.add_argument('--output', type=str, nargs='?', default='./output/', help='output directory')
     parser.add_argument("--exp_name", default=exp_name, type=str)
     parser.add_argument("--mode", default="test", type=str, choices=["train", "test"])
-    parser.add_argument("--model", default="crnn", type=str, choices=["cinenet", "crnn"])
+    parser.add_argument("--model", default="crnn_sr", type=str, choices=["cinenet", "crnn", "crnn_sr"])
     parser.add_argument("--ckpt_path", default=None, type=str)
 
     parser = MriDataModule.add_data_specific_args(parser)
@@ -26,9 +28,13 @@ def build_args():
         parser = CineNetModule.add_model_specific_args(parser)
     elif parser.parse_known_args()[0].model == "crnn":
         parser = CRNN_CineNetModule.add_model_specific_args(parser)
+    elif parser.parse_known_args()[0].model == "crnn_sr":
+        parser = CRNN_SR_CineNetModule.add_model_specific_args(parser)
+
+
         
     parser.set_defaults(
-        data_path=data_path,
+        # data_path=data_path,
         seed=42,
         batch_size=1,
         default_root_dir=default_log_path,
@@ -36,7 +42,12 @@ def build_args():
     )
     
     args = parser.parse_args()
-    
+
+    input_dir = args.input
+    output_dir = args.output
+    print("Input data store in:", input_dir)
+    print("Output data store in:", output_dir)
+
     # checkpoints
     checkpoint_dir = args.default_root_dir / "checkpoints"
     if not checkpoint_dir.exists():
@@ -67,13 +78,14 @@ def main():
     
     #* Data Loader
     data_module = MriDataModule(
-        data_path=args.data_path,
+        data_path=Path(args.input),
         test_transform=test_transform,
         test_sample_rate=args.test_sample_rate,
         use_dataset_cache=args.use_dataset_cache,
         batch_size=args.batch_size,
         num_workers=args.num_workers, #os.cpu_count()
         distributed_sampler=False
+
     )
     
     #* Network Model
@@ -111,6 +123,24 @@ def main():
         save_space=args.save_space,
         reset_cache=args.reset_cache,
     )
+    elif args.model == "crnn_sr":
+        model = CRNN_SR_CineNetModule(
+        num_cascades=args.num_cascades,
+        chans=args.chans,
+        pools=args.pools,
+        dynamic_type=args.dynamic_type,
+        weight_sharing=args.weight_sharing,
+        data_term=args.data_term,
+        lambda_=args.lambda_,
+        learnable=args.learnable,
+        lr=args.lr,
+        lr_step_size=args.lr_step_size,
+        lr_gamma=args.lr_gamma,
+        weight_decay=args.weight_decay,
+        save_space=args.save_space,
+        reset_cache=args.reset_cache,
+    )
+
         
     print("Done Loading Data and Model...")
 
