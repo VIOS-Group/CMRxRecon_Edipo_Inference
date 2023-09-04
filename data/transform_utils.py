@@ -111,3 +111,13 @@ def crop_to_depad(data, metadata):
     data = torchvision.transforms.functional.crop(data, h_crop, w_crop, ori_height, ori_width)    
 
     return data.permute(0, 4, 3, 1, 2)
+
+def new_crop(data, metadata):
+    ori_height, ori_width = metadata['height'], metadata['width']
+    data = data.permute(0, 1, 3, 2)
+    w_crop = (data.shape[-1] - ori_width) // 2
+    h_crop = (data.shape[-2] - ori_height) // 2
+
+    data = torchvision.transforms.functional.crop(data, h_crop, w_crop, ori_height, ori_width)
+
+    return data.permute(0, 1, 3, 2)
