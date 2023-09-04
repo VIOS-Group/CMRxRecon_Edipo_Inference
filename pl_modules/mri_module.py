@@ -13,6 +13,12 @@ import sys
 sys.path.append('../')
 from utils import io
 
+#TODO
+from datetime import datetime
+dateTimeObj = datetime.now() # current date and time
+stamp = dateTimeObj.strftime("%Y%m%d%H%M") 
+##
+
 class DistributedMetricSum(Metric):
     def __init__(self, dist_sync_on_step=True):
         super().__init__(dist_sync_on_step=dist_sync_on_step)
@@ -29,7 +35,8 @@ class MriModule(LightningModule):
     def __init__(
         self,
         num_log_images: int=16,
-        recon_dir = "/output"
+        # recon_dir = "/output" TODO added timestamp to differentiate between different subsequent experiments on multiple GPUs to prevent over-writing
+        recon_dir = f"./output_{stamp}"
     ):
         super().__init__()
         
@@ -68,7 +75,8 @@ class MriModule(LightningModule):
         # stack all the slices for each file
         for fname in outputs:
             outputs[fname] = np.stack(
-                [out for _, out in sorted(outputs[fname].items())]
+                # [out for _, out in sorted(outputs[fname].items())] #TODO fixed a bug with the location of the tensor (cpu or GPU)
+                [out.cpu() for _, out in sorted(outputs[fname].items())]
             )
 
         # pull the default_root_dir if we have a trainer, otherwise save to cwd
