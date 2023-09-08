@@ -47,6 +47,7 @@ class SliceDataset(torch.utils.data.Dataset):
         """
 
         self.root = root / ('SingleCoil/Cine/TestSet')
+        # self.root = root / ('TestSet')
         self.transform = transform
         self.dataset_cache_file = Path(dataset_cache_file)
         
@@ -69,7 +70,8 @@ class SliceDataset(torch.utils.data.Dataset):
             folders = []
             #* iterate each accelerate factor to get all folders
             acc_folders = ['AccFactor04', 'AccFactor08', 'AccFactor10']
-            
+            # acc_folders = ['AccFactor04']
+
             for acc_folder in acc_folders:
                 acc_file = natsorted(list(Path(os.path.join(self.root,acc_folder)).iterdir()))
                 folders.append(acc_file)

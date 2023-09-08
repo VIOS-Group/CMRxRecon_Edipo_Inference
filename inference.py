@@ -13,6 +13,7 @@ def build_args():
     parser = ArgumentParser()
     # test_path = "./input/"
     exp_name = "crnn_NWS_6c_64chan_L1_ssim_HI_SR"
+    # exp_name = "crnn_SR_04SAX_SSIM_L1_HI"
     # data_path = Path(test_path)
     default_log_path = Path("logs") / exp_name
 
