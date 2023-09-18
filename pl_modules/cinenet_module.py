@@ -177,15 +177,7 @@ class CineNetModule(MriModule):
 
         for i, batch_idx in enumerate(batch_indices):
             if batch_idx in self.val_log_indices:
-                key = f"val_images_idx_{batch_idx}"
-
-                ## TODO: debug the following size mismatch
-                # validation_step FOR IF - val_logs[image]:  torch.Size([1, 512, 256, 12])
-                # validation_step FOR IF - val_logs[image][i]:  torch.Size([512, 256, 12])
-                # validation_step FOR IF - val_logs[image][i][0]:  torch.Size([256, 12])
-                # validation_step FOR IF - val_logs[image][i][0].unsqueeze(0):  torch.Size([1, 256, 12])
-                # So, to solve, we change [0] with [:,:,0] to take the first temporal slice to display it
-
+                key = f"val_images_idx_{batch_idx}"           
 
                 image = val_logs["image"][i][:,:,0].unsqueeze(0)
                 target = val_logs["target"][i][:,:,0].unsqueeze(0)
@@ -233,70 +225,6 @@ class CineNetModule(MriModule):
         self.validation_step_outputs.append(pred)
         return pred
 
-    # def test_step(self, batch, batch_idx):
-    #     output = self(batch.image, batch.kspace, batch.mask)
-
-    #     output = crop_to_depad(output, batch.metadata)
-    #     image = crop_to_depad(batch.image, batch.metadata)
-    #     target = crop_to_depad(batch.target, batch.metadata)
-
-    #     post_image = self._postprocess(image, batch.mean, batch.std)
-    #     post_output = self._postprocess(output, batch.mean, batch.std)
-    #     post_target = self._postprocess(target, batch.mean, batch.std)
-
-    #     test_logs = {
-    #         "batch_idx": batch_idx,
-    #         "image": post_image,
-    #         "kspace": batch.kspace,
-    #         "output": post_output,
-    #         "target": post_target,
-    #         "mask": batch.mask,
-    #         "fname": batch.fname,
-    #         "slice_num": batch.slice_num,
-    #         "max_value": batch.max_value,
-    #         "metadata": batch.metadata,
-    #     }
-
-    #     for k in ("batch_idx", "image", "kspace", "output", "target", "mask", "fname", "slice_num", "max_value"):
-    #         if k not in test_logs.keys():
-    #             raise ValueError(f"Key {k} not found in test_logs")
-
-    #     if test_logs["output"].ndim != 4 or test_logs["target"].ndim != 4 or test_logs["image"].ndim != 4:
-    #         raise ValueError(f"Wrong number of dimensions: Output {test_logs['output'].ndim}, \
-    #                             Target {test_logs['target'].ndim}, Image {test_logs['image'].ndim}")
-
-    #     # compute evaluation metrics
-    #     mse_vals = defaultdict(dict)
-    #     target_norms = defaultdict(dict)
-    #     ssim_vals = defaultdict(dict)
-    #     max_vals = dict()
-
-    #     for i, fname in enumerate(test_logs["fname"]):
-    #         slice_num = int(test_logs["slice_num"][i].cpu())
-    #         maxval = test_logs["max_value"][i].cpu().numpy()
-    #         output = test_logs["output"][i].cpu().numpy()
-    #         target = test_logs["target"][i].cpu().numpy()
-
-    #         mse_vals[fname][slice_num] = torch.tensor(
-    #             evaluate.mse(target, output)).view(1)
-    #         target_norms[fname][slice_num] = torch.tensor(
-    #             evaluate.mse(target, np.zeros_like(target))).view(1)
-    #         ssim_vals[fname][slice_num] = torch.tensor(
-    #             evaluate.ssim(target, output, maxval=maxval)).view(1)
-    #         max_vals[fname] = maxval
-
-    #     pred = {
-    #         "mse_vals": dict(mse_vals),
-    #         "target_norms": dict(target_norms),
-    #         "ssim_vals": dict(ssim_vals),
-    #         "max_vals": max_vals
-    #     }
-    #     test_logs.update(pred)
-
-    #     # self.test_step_outputs.append(test_logs)
-
-    #     return test_logs
-    #TODO: commented out the above section and substituted with the following one, much easier, that does not log images into tensorboard:
     def test_step(self, batch, batch_idx):
         output = self(batch.image, batch.kspace, batch.mask)
 
@@ -347,22 +275,6 @@ class CineNetModule(MriModule):
     def add_model_specific_args(parent_parser):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         parser = MriModule.add_model_specific_args(parser)
-
-        # parser.add_argument("--num_cascades", default=5, type=int, help="Number of iterations")
-        # parser.add_argument("--chans", default=48, type=int, help="Number of channels in CineNet blocks")
-        # parser.add_argument("--pools", default=3, type=int, help="Number of U-Net pooling for U-Net in CineNet blocks")
-        # parser.add_argument("--dynamic_type", default='CRNN', choices=['XF', 'XT', '2D', '3D', 'CRNN'], type=str, help="Architectural variation for dynamic reconstruction. Options are ['XF', 'XT', '2D', '3D', 'CRNN']")
-        # parser.add_argument("--weight_sharing", default=True, type=bool, help="Allows parameter sharing of U-Nets in x-f, y-f planes")
-        # parser.add_argument("--data_term", default='DC', choices=['DC', 'GD', 'PG', 'VS'], type=str, help="Data consistency term to use. Options are ['DC', 'GD', 'PG', 'VS']")
-        # parser.add_argument("--lambda_", default=np.log(np.exp(1)-1.)/1., type=float, help="Init value of data consistency block (DCB)")
-        # parser.add_argument("--learnable", default=True, type=bool, help="Whether to learn lambda_")
-        # parser.add_argument("--lr", default=3e-4, type=float, help="Adam learning rate")
-        # parser.add_argument("--lr_step_size", default=40, type=int, help="Epoch at which to decrease step size")
-        # parser.add_argument("--lr_gamma", default=0.1, type=float, help="Extent to which step size should be decreased")
-        # parser.add_argument("--weight_decay", default=0.0, type=float, help="Strength of weight decay regularization")
-        # parser.add_argument("--save_space", type=bool, default=True)
-        # parser.add_argument("--reset_cache", type=bool, default=False)
-        # TODO Set different defaults settings for cinenet experiments, in case they are not specified:
         parser.add_argument("--num_cascades", default=5, type=int, help="Number of iterations")
         parser.add_argument("--chans", default=16, type=int, help="Number of channels in CineNet blocks")
         parser.add_argument("--pools", default=3, type=int, help="Number of U-Net pooling for U-Net in CineNet blocks")
