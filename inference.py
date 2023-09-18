@@ -11,10 +11,7 @@ torch.set_float32_matmul_precision('medium')
 
 def build_args():
     parser = ArgumentParser()
-    # test_path = "./input/"
     exp_name = "crnn_NWS_6c_64chan_L1_ssim_HI_SR"
-    # exp_name = "crnn_SR_04SAX_SSIM_L1_HI"
-    # data_path = Path(test_path)
     default_log_path = Path("logs") / exp_name
 
     parser.add_argument('--input', type=str, nargs='?', default='/input', help='input directory')
@@ -35,7 +32,6 @@ def build_args():
 
         
     parser.set_defaults(
-        # data_path=data_path,
         seed=42,
         batch_size=1,
         default_root_dir=default_log_path,
