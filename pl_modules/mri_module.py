@@ -29,7 +29,7 @@ class MriModule(LightningModule):
     def __init__(
         self,
         num_log_images: int=16,
-        recon_dir = "output"
+        recon_dir = "/output"
     ):
         super().__init__()
         
@@ -81,6 +81,6 @@ class MriModule(LightningModule):
     def add_model_specific_args(parent_parser):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         parser.add_argument("--num_log_images", type=int, default=16, help="Number of images to log")
-        parser.add_argument("--recon_dir", default="output", type=str)
+        parser.add_argument("--recon_dir", default="/output", type=str)
         
         return parser
