@@ -17,8 +17,8 @@ def build_args():
     # data_path = Path(test_path)
     default_log_path = Path("logs") / exp_name
 
-    parser.add_argument('--input', type=str, nargs='?', default='./input/', help='input directory')
-    parser.add_argument('--output', type=str, nargs='?', default='./output/', help='output directory')
+    parser.add_argument('--input', type=str, nargs='?', default='/input', help='input directory')
+    parser.add_argument('--output', type=str, nargs='?', default='/output', help='output directory')
     parser.add_argument("--exp_name", default=exp_name, type=str)
     parser.add_argument("--mode", default="test", type=str, choices=["train", "test"])
     parser.add_argument("--model", default="crnn_sr", type=str, choices=["cinenet", "crnn", "crnn_sr"])
